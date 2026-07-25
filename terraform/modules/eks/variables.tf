@@ -28,11 +28,6 @@ variable "argocd_version" {
   description = "Version of the ArgoCD Helm chart"
 }
 
-variable "node_type" {
-  type        = list(string)
-  description = "EC2 instance types for the burstable node pool"
-}
-
 variable "tags" {
   type        = map(string)
   default     = {}

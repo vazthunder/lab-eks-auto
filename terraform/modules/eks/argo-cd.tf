@@ -19,7 +19,6 @@ resource "helm_release" "argo-cd" {
 
   depends_on = [
     aws_eks_cluster.main,
-    kubernetes_manifest.nodepool_burstable,
-    kubernetes_storage_class_v1.gp3
+    time_sleep.delay,
   ]
 }

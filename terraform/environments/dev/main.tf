@@ -33,7 +33,6 @@ module "eks" {
   name_prefix         = var.name_prefix
   public_access_cidrs = var.public_access_cidrs
   argocd_version      = var.argocd_version
-  node_type           = var.node_type
   tags                = var.tags
 
   depends_on = [module.vpc]

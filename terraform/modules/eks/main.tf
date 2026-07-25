@@ -17,8 +17,9 @@ resource "aws_eks_cluster" "main" {
   }
 
   compute_config {
-    enabled    = true
-    node_pools = []
+    enabled       = true
+    node_pools    = ["system"]
+    node_role_arn = aws_iam_role.node.arn
   }
 
   kubernetes_network_config {
