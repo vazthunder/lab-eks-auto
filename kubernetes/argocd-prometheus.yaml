@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  namespace: argo-cd
+  name: prometheus
+spec:
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  sourceRepos:
+    - '*'
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: monitoring
+    - server: https://kubernetes.default.svc
+      namespace: kube-system
+
+---
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argo-cd
+  name: prometheus
+spec:
+  project: prometheus
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  source:
+    chart: kube-prometheus-stack
+    repoURL: oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack
+    targetRevision: 78.2.1
+    helm:
+      values: |
+        prometheus:
+          ingress:
+            enabled: true
+            ingressClassName: alb
+            annotations:
+              alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+            hosts:
+              - prometheus.eksauto.nemonobody.xyz
+            paths:
+              - /*
+          prometheusSpec:
+            podMonitorSelectorNilUsesHelmValues: false
+            serviceMonitorSelectorNilUsesHelmValues: false
+        grafana:
+          ingress:
+            enabled: true
+            ingressClassName: alb
+            annotations:
+              alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+            hosts:
+              - grafana.eksauto.nemonobody.xyz
+            paths:
+              - /*
+          dashboards:
+            default:
+              argo-cd:
+                gnetId: 14584
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  

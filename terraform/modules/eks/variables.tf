@@ -18,6 +18,21 @@ variable "name_prefix" {
   description = "Prefix for IAM role names"
 }
 
+variable "public_access_cidrs" {
+  type        = list(string)
+  description = "CIDR blocks allowed to access the EKS cluster public endpoint"
+}
+
+variable "argocd_version" {
+  type        = string
+  description = "Version of the ArgoCD Helm chart"
+}
+
+variable "node_type" {
+  type        = list(string)
+  description = "EC2 instance types for the burstable node pool"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}

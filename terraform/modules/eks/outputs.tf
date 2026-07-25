@@ -21,3 +21,11 @@ output "oidc_issuer" {
 output "cluster_certificate_authority_data" {
   value = aws_eks_cluster.main.certificate_authority[*].data
 }
+
+output "eksadmin_role_arn" {
+  value = aws_iam_role.eksadmin.arn
+}
+
+output "eksadmin_group_name" {
+  value = aws_iam_group.eksadmin.name
+}

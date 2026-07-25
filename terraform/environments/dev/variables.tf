@@ -34,6 +34,11 @@ variable "private_subnet_cidrs" {
   default     = ["10.0.0.0/19", "10.0.32.0/19"]
 }
 
+variable "public_subnet_cidrs" {
+  type        = list(string)
+  description = "Public subnet CIDRs (one per AZ, for ALB)"
+}
+
 variable "name_prefix" {
   type        = string
   description = "Prefix for resource names"
@@ -44,6 +49,32 @@ variable "ecr_repository_name" {
   type        = string
   description = "ECR repository name"
   default     = "myapp"
+}
+
+variable "domain_names" {
+  type        = list(string)
+  description = "Domain names for ACM certificate"
+}
+
+variable "route53_zone_name" {
+  type        = string
+  default     = null
+  description = "Route53 zone name for auto DNS validation (null = manual)"
+}
+
+variable "public_access_cidrs" {
+  type        = list(string)
+  description = "CIDR blocks allowed to access the EKS cluster public endpoint"
+}
+
+variable "argocd_version" {
+  type        = string
+  description = "Version of the ArgoCD Helm chart"
+}
+
+variable "node_type" {
+  type        = list(string)
+  description = "EC2 instance types for the burstable node pool"
 }
 
 variable "tags" {

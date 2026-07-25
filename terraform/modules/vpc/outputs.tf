@@ -13,3 +13,7 @@ output "private_subnet_cidrs" {
 output "azs" {
   value = var.azs
 }
+
+output "public_subnet_ids" {
+  value = var.public_subnet_cidrs != null ? aws_subnet.public[*].id : []
+}

@@ -1,0 +1,70 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  namespace: argo-cd
+  name: argo-cd
+spec:
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  sourceRepos:
+    - '*'
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: argo-cd
+    # - server: https://kubernetes.default.svc
+      # namespace: kube-system
+
+---
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argo-cd
+  name: argo-cd
+spec:
+  project: argo-cd
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-cd
+  source:
+    chart: argo-cd
+    repoURL: https://argoproj.github.io/argo-helm
+    targetRevision: 10.2.1
+    helm:
+      values: |
+        configs:
+          params:
+            server.insecure: true
+        controller:
+          metrics: 
+            enabled: true
+            serviceMonitor:
+              enabled: true
+            additionalLabels:
+              release: prometheus
+        server:
+          ingress:
+            enabled: true
+            ingressClassName: alb
+            annotations:
+              alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+            hosts:
+              - argo-cd.eksauto.nemonobody.xyz
+            paths:
+              - /*
+          metrics: 
+            enabled: true
+            serviceMonitor:
+              enabled: true
+            additionalLabels:
+              release: prometheus
+        dex:
+          enabled: false
+        notifications:
+          enabled: false
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  

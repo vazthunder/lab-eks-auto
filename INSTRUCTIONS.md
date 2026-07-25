@@ -17,4 +17,4 @@
 - Never invent configuration parameters, flags, API fields, Terraform arguments, Kubernetes manifests, or CLI options.
 - Security has high priority, warn about security risks clearly.
 - Never repeat secrets unnecessarily.
-- Always run linting tools for respective files: cfn-lint (cloudformation), tflint (terraform), ansible-lint (ansible)
+- Always run linting tools for respective files: cfn-lint (cloudformation), tflint (terraform), ansible-lint (ansible) and kube-linter (k8s)

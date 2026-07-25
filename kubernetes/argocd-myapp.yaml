@@ -1,0 +1,49 @@
+# Manual secret creation (do not commit credentials to Git):
+# kubectl create secret generic myapp -n argo-cd \
+#   --from-literal=project=lab-argocd \
+#   --from-literal=type=git \
+#   --from-literal=url=https://github.com/vazthunder/lab-eks-auto.git \
+#   --from-literal=username=<your-github-username> \
+#   --from-literal=password=<your-github-pat> && \
+# kubectl label secret myapp -n argo-cd argocd.argoproj.io/secret-type=repository
+
+---
+
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  namespace: argo-cd
+  name: myapp
+spec:
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  sourceRepos:
+    - '*'
+  destinations:
+    - namespace: myapp
+      server: https://kubernetes.default.svc
+
+---
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argo-cd
+  name: myapp
+spec:
+  project: lab-argocd
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: myapp
+  source:
+    path: myapp/
+    repoURL: https://github.com/vazthunder/lab-eks-auto.git
+    targetRevision: HEAD
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      selfHeal: true
+      prune: true
+  

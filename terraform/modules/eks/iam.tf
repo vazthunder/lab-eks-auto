@@ -71,3 +71,39 @@ resource "aws_iam_role_policy_attachment" "node_AmazonEC2ContainerRegistryPullOn
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
   role       = aws_iam_role.node.name
 }
+
+resource "aws_iam_role" "eksadmin" {
+  name = "${var.name_prefix}-eksadmin"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+  tags = var.tags
+}
+
+resource "aws_iam_group" "eksadmin" {
+  name = "${var.name_prefix}-eksadmin"
+}
+
+resource "aws_iam_group_policy" "eksadmin_assume" {
+  name  = "${var.name_prefix}-eksadmin-assume"
+  group = aws_iam_group.eksadmin.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "sts:AssumeRole"
+        Resource = aws_iam_role.eksadmin.arn
+      }
+    ]
+  })
+}

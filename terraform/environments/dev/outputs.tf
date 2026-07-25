@@ -44,12 +44,19 @@ output "docker_push_command" {
   value = "docker push ${module.ecr.repository_url}:latest"
 }
 
-output "ssm_tunnel_command" {
-  description = "Command to tunnel kubectl through SSM to reach private-only EKS endpoint"
-  value       = <<-EOT
-    aws ssm start-session \\
-      --target <bastion-instance-id> \\
-      --document-name AWS-StartPortForwardingSessionToRemoteHost \\
-      --parameters '{"host":["${module.eks.cluster_endpoint}"],"portNumber":["443"],"localPortNumber":["8443"]}'
-  EOT
+output "acm_certificate_arn" {
+  value = module.acm.certificate_arn
+}
+
+output "acm_validation_records" {
+  description = "CNAME records to add to DNS provider if not using Route53"
+  value       = module.acm.validation_options
+}
+
+output "eksadmin_role_arn" {
+  value = module.eks.eksadmin_role_arn
+}
+
+output "eksadmin_group_name" {
+  value = module.eks.eksadmin_group_name
 }
