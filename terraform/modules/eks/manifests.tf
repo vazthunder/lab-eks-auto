@@ -24,7 +24,10 @@ spec:
       requirements:
         - key: node.kubernetes.io/instance-type
           operator: In
-          values: ["t3.medium", "t3a.medium"]
+          values: ["m7i-flex.large", "c7i-flex.large"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["spot"]
 YEOF
       rm "$KUBECONFIG"
     EOT
