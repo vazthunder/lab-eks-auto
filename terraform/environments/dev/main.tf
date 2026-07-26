@@ -44,5 +44,6 @@ module "github_oidc" {
 
   repository  = var.github_repository
   name_prefix = var.name_prefix
+  sub_claim   = var.github_sub_claim
   tags        = var.tags
 }

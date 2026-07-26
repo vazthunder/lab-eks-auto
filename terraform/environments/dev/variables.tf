@@ -77,6 +77,11 @@ variable "github_repository" {
   description = "GitHub repository for OIDC trust (owner/repo format)"
 }
 
+variable "github_sub_claim" {
+  type        = string
+  description = "GitHub OIDC sub claim pattern. Set in tfvars when ready."
+}
+
 variable "tags" {
   type        = map(string)
   description = "Common tags"

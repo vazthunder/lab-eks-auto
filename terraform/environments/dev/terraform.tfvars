@@ -12,6 +12,7 @@ route53_zone_name    = "eksauto.nemonobody.xyz"
 public_subnet_cidrs  = ["10.0.10.0/24", "10.0.20.0/24"]
 argocd_version       = "10.2.1"
 github_repository    = "vazthunder/lab-eks-auto"
+github_sub_claim     = "repo:vazthunder@17200025/lab-eks-auto@1309730414:ref:refs/heads/main"
 tags = {
   Environment = "dev"
   ManagedBy   = "terraform"

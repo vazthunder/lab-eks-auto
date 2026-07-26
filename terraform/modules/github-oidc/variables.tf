@@ -8,6 +8,11 @@ variable "name_prefix" {
   description = "Prefix for resource names"
 }
 
+variable "sub_claim" {
+  type        = string
+  description = "GitHub OIDC sub claim pattern (e.g. repo:owner/repo:*)"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}
