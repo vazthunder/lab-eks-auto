@@ -2,6 +2,7 @@ import express from "express";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const version = process.env.GIT_SHA || "unknown";
 
 app.get("/healthz", (_req, res) => res.sendStatus(200));
 app.get("/readyz", (_req, res) => res.sendStatus(200));
@@ -9,6 +10,7 @@ app.get("/readyz", (_req, res) => res.sendStatus(200));
 app.get("/info", (_req, res) => {
   res.json({
     app: "eks-test-app",
+    version,
     node: process.version,
     hostname: process.env.HOSTNAME || "unknown",
     cluster: process.env.CLUSTER_NAME || "unknown",
@@ -59,6 +61,7 @@ app.get("/", (_req, res) => {
     <p style="color:#718096;font-size:0.9rem">Deployed on Amazon EKS Auto Mode</p>
     <div class="info">
       <p>Node.js <span>${process.version}</span></p>
+      <p>Version <span>${version}</span></p>
       <p>Hostname <span>${hostname}</span></p>
       <p>Cluster <span>${cluster}</span></p>
     </div>

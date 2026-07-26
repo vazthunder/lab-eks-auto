@@ -5,6 +5,8 @@ RUN npm ci --omit=dev
 COPY index.js .
 
 FROM gcr.io/distroless/nodejs22-debian12
+ARG GIT_SHA
+ENV GIT_SHA=$GIT_SHA
 COPY --from=build /app /app
 WORKDIR /app
 USER nonroot

@@ -1,6 +1,6 @@
 # Make sure your SSH key is registered in GitHub first, then:
 # kubectl create secret generic myapp -n argo-cd \
-#   --from-literal=project=lab-argocd \
+#   --from-literal=project=myapp \
 #   --from-literal=type=git \
 #   --from-literal=url=git@github.com:vazthunder/lab-eks-auto.git \
 #   --from-file=sshPrivateKey=<path-to-your-private-key> && \
@@ -31,14 +31,14 @@ metadata:
   namespace: argo-cd
   name: myapp
 spec:
-  project: lab-argocd
+  project: myapp
   destination:
     server: https://kubernetes.default.svc
     namespace: myapp
   source:
-    path: app/k8s/myapp.yaml
+    path: app/k8s
     repoURL: git@github.com:vazthunder/lab-eks-auto.git
-    targetRevision: HEAD
+    targetRevision: main
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
