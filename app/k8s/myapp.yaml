@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: 787158870577.dkr.ecr.us-east-2.amazonaws.com/myapp:f029ed4246a244c74e5973a11d6a8c5a8a0480ef
+          image: 787158870577.dkr.ecr.us-east-2.amazonaws.com/myapp:c4511697275c3360a81b9c3eeeac96e7d241a473
           ports:
             - containerPort: 3000
           env:
