@@ -72,6 +72,11 @@ variable "argocd_version" {
   description = "Version of the ArgoCD Helm chart"
 }
 
+variable "github_repository" {
+  type        = string
+  description = "GitHub repository for OIDC trust (owner/repo format)"
+}
+
 variable "tags" {
   type        = map(string)
   description = "Common tags"

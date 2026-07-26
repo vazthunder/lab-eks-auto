@@ -38,3 +38,11 @@ module "eks" {
 
   depends_on = [module.vpc]
 }
+
+module "github_oidc" {
+  source = "../../modules/github-oidc"
+
+  repository  = var.github_repository
+  name_prefix = var.name_prefix
+  tags        = var.tags
+}

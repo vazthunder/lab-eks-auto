@@ -11,6 +11,7 @@ domain_names         = ["eksauto.nemonobody.xyz", "*.eksauto.nemonobody.xyz"]
 route53_zone_name    = "eksauto.nemonobody.xyz"
 public_subnet_cidrs  = ["10.0.10.0/24", "10.0.20.0/24"]
 argocd_version       = "10.2.1"
+github_repository    = "vazthunder/lab-eks-auto"
 tags = {
   Environment = "dev"
   ManagedBy   = "terraform"

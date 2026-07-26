@@ -30,9 +30,9 @@ resource "helm_release" "argo-cd" {
           enabled          = true
           ingressClassName = "alb"
           annotations = {
-            "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTPS\":443}]"
+            "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTPS\":443}]"
             "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
-            "external-dns.alpha.kubernetes.io/hostname" = "argo-cd.eksauto.nemonobody.xyz"
+            "external-dns.alpha.kubernetes.io/hostname"  = "argo-cd.eksauto.nemonobody.xyz"
           }
         }
       }

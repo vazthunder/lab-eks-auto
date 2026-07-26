@@ -57,6 +57,11 @@ output "eksadmin_role_arn" {
   value = module.eks.eksadmin_role_arn
 }
 
+output "github_actions_role_arn" {
+  description = "IAM role ARN for GitHub Actions OIDC"
+  value       = module.github_oidc.role_arn
+}
+
 output "eksadmin_group_name" {
   value = module.eks.eksadmin_group_name
 }
