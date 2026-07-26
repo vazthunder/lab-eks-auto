@@ -42,7 +42,7 @@ jobs:
 
       - name: Update image in manifest
         run: |
-          sed -i "s|image: \${ECR_REPO_URL}:latest|image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}|" app/k8s/myapp.yaml
+          sed -i "s|image: .*|image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}|" app/k8s/myapp.yaml
 
       - name: Commit and push
         run: |
