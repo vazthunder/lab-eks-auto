@@ -1,3 +1,8 @@
+# Manual secret creation (do not commit credentials to Git):
+# kubectl create secret generic grafana-admin -n monitoring \
+#   --from-literal=admin-user=admin \
+#   --from-literal=admin-password=<your-16-char-password>
+
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
@@ -30,32 +35,71 @@ spec:
   source:
     chart: kube-prometheus-stack
     repoURL: oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack
-    targetRevision: 78.2.1
+    targetRevision: 87.19.1
     helm:
       values: |
         prometheus:
-          ingress:
-            enabled: true
-            ingressClassName: alb
-            annotations:
-              alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-            hosts:
-              - prometheus.eksauto.nemonobody.xyz
-            paths:
-              - /*
+          # ingress:
+          #   enabled: true
+          #   ingressClassName: alb
+          #   annotations:
+          #     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+          #     alb.ingress.kubernetes.io/backend-protocol: "HTTP"
+          #     external-dns.alpha.kubernetes.io/hostname: "prometheus.eksauto.nemonobody.xyz"
+          #   hosts:
+          #     - prometheus.eksauto.nemonobody.xyz
+          #   paths:
+          #     - /*
           prometheusSpec:
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: gp3
+                  accessModes:
+                    - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: 1Gi
             podMonitorSelectorNilUsesHelmValues: false
             serviceMonitorSelectorNilUsesHelmValues: false
         grafana:
+          admin:
+            existingSecret: grafana-admin
+          service:
+            type: "NodePort"
           ingress:
             enabled: true
             ingressClassName: alb
             annotations:
               alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+              alb.ingress.kubernetes.io/backend-protocol: "HTTP"
+              external-dns.alpha.kubernetes.io/hostname: "grafana.eksauto.nemonobody.xyz"
+              alb.ingress.kubernetes.io/healthcheck-path: "/api/health"
             hosts:
               - grafana.eksauto.nemonobody.xyz
             paths:
               - /*
+          persistence:
+            enabled: true
+            type: sts
+            storageClassName: gp3
+            accessModes:
+              - ReadWriteOnce
+            size: 1Gi
+            finalizers:
+              - kubernetes.io/pvc-protection
+          dashboardProviders:
+            dashboardproviders.yaml:
+              apiVersion: 1
+              providers:
+                - name: default
+                  orgId: 1
+                  folder: ""
+                  type: file
+                  disableDeletion: false
+                  editable: true
+                  options:
+                    path: /var/lib/grafana/dashboards/default
           dashboards:
             default:
               argo-cd:

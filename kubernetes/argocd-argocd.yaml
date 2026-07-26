@@ -33,9 +33,11 @@ spec:
     targetRevision: 10.2.1
     helm:
       values: |
+        global:
+          domain: "argo-cd.eksauto.nemonobody.xyz"
         configs:
           params:
-            server.insecure: true
+            "server.insecure": true
         controller:
           metrics: 
             enabled: true
@@ -43,16 +45,16 @@ spec:
               enabled: true
             additionalLabels:
               release: prometheus
+        service:
+          type: "NodePort"
         server:
           ingress:
             enabled: true
             ingressClassName: alb
             annotations:
               alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-            hosts:
-              - argo-cd.eksauto.nemonobody.xyz
-            paths:
-              - /*
+              alb.ingress.kubernetes.io/backend-protocol: "HTTP"
+              external-dns.alpha.kubernetes.io/hostname: "argo-cd.eksauto.nemonobody.xyz"
           metrics: 
             enabled: true
             serviceMonitor:

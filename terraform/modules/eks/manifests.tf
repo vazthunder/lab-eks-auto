@@ -28,6 +28,9 @@ spec:
         - key: karpenter.sh/capacity-type
           operator: In
           values: ["spot"]
+  limits:
+    cpu: "10"
+    memory: 40Gi
 YEOF
       rm "$KUBECONFIG"
     EOT
@@ -53,6 +56,8 @@ metadata:
   name: alb
 spec:
   scheme: internet-facing
+  certificateARNs:
+    - ${var.certificate_arn}
   group:
     name: main
 ---
@@ -92,7 +97,12 @@ metadata:
   name: gp3
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
-provisioner: ebs.csi.aws.com
+allowedTopologies:
+- matchLabelExpressions:
+  - key: eks.amazonaws.com/compute-type
+    values:
+    - auto
+provisioner: ebs.csi.eks.amazonaws.com
 reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true

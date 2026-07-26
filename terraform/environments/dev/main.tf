@@ -33,6 +33,7 @@ module "eks" {
   name_prefix         = var.name_prefix
   public_access_cidrs = var.public_access_cidrs
   argocd_version      = var.argocd_version
+  certificate_arn     = module.acm.certificate_arn
   tags                = var.tags
 
   depends_on = [module.vpc]

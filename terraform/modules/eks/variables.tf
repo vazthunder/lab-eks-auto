@@ -23,6 +23,11 @@ variable "public_access_cidrs" {
   description = "CIDR blocks allowed to access the EKS cluster public endpoint"
 }
 
+variable "certificate_arn" {
+  type        = string
+  description = "ACM certificate ARN for ALB ingress"
+}
+
 variable "argocd_version" {
   type        = string
   description = "Version of the ArgoCD Helm chart"
