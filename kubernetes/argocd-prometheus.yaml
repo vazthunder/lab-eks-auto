@@ -38,19 +38,28 @@ spec:
     targetRevision: 87.19.1
     helm:
       values: |
+        prometheusOperator:
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+
         prometheus:
-          # ingress:
-          #   enabled: true
-          #   ingressClassName: alb
-          #   annotations:
-          #     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-          #     alb.ingress.kubernetes.io/backend-protocol: "HTTP"
-          #     external-dns.alpha.kubernetes.io/hostname: "prometheus.eksauto.nemonobody.xyz"
-          #   hosts:
-          #     - prometheus.eksauto.nemonobody.xyz
-          #   paths:
-          #     - /*
           prometheusSpec:
+            retention: 15d
+            retentionSize: 1GB
+            scrapeInterval: 30s
+            evaluationInterval: 30s
+            resources:
+              requests:
+                cpu: 1
+                memory: 2Gi
+              limits:
+                cpu: 2
+                memory: 4Gi
             storageSpec:
               volumeClaimTemplate:
                 spec:
@@ -59,9 +68,22 @@ spec:
                     - ReadWriteOnce
                   resources:
                     requests:
-                      storage: 1Gi
+                      storage: 5Gi
             podMonitorSelectorNilUsesHelmValues: false
             serviceMonitorSelectorNilUsesHelmValues: false
+
+        alertmanager:
+          alertmanagerSpec:
+            replicas: 1
+            retention: 240h
+            resources:
+              requests:
+                cpu: 200m
+                memory: 512Mi
+              limits:
+                cpu: 500m
+                memory: 1Gi
+
         grafana:
           admin:
             existingSecret: grafana-admin
@@ -104,6 +126,214 @@ spec:
             default:
               argo-cd:
                 gnetId: 14584
+        
+        defaultRules:
+          disabled:
+            ### Managed by AWS Auto Mode
+            KubeAPIDown: true
+            KubeAPIErrorsHigh: true
+            KubeAPILatencyHigh: true
+            KubeSchedulerDown: true
+            KubeSchedulerTooManyPods: true
+            KubeControllerManagerDown: true
+            KubeEtcdMembersDown: true
+            KubeEtcdInsufficientMembers: true
+            KubeEtcdNoLeader: true
+            KubeEtcdHighNumberOfLeaderChanges: true
+            KubeEtcdHighFsyncDurations: true
+            KubeEtcdHighCommitDurations: true
+            KubeVersionMismatch: true
+            KubeCPUOvercommit: true
+            KubeMemoryOvercommit: true
+            KubeletTooManyPods: true
+            InfoInhibitor: true
+
+        alertmanager:
+          config:
+            global:
+              resolve_timeout: 5m
+            route:
+              receiver: "null"
+              group_by:
+                - alertname
+                - namespace
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 4h
+              routes:
+                - receiver: slack-critical
+                  matchers:
+                    - severity="critical"
+                  continue: false
+                - receiver: email-warning
+                  matchers:
+                    - severity="warning"
+                  continue: false
+                - receiver: "null"
+                  matchers:
+                    - severity="info"
+            receivers:
+              - name: slack-critical
+                slack_configs:
+                  - api_url: SLACK_WEBHOOK_URL
+                    channel: "#SLACK_CHANNEL"
+                    send_resolved: true
+                    title: |-
+                      [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}
+                    text: |-
+                      *Severity:* {{ .CommonLabels.severity }}
+                      *Namespace:* {{ .CommonLabels.namespace }}
+                      *Summary:* {{ .CommonAnnotations.summary }}
+                      *Description:* {{ .CommonAnnotations.description }}
+                      {{ range .Alerts }}
+                      {{ .GeneratorURL }}
+                      {{ end }}
+              - name: email-warning
+                email_configs:
+                  - to: ops@example.com
+                    from: prometheus@example.com
+                    smarthost: smtp.example.com:587
+                    auth_username: prometheus@example.com
+                    auth_password: YOUR_SMTP_PASSWORD
+                    require_tls: true
+                    send_resolved: true
+              - name: "null"
+
+        additionalPrometheusRulesMap:
+          custom:
+            groups:
+              - name: custom.rules
+                rules:
+                  - alert: PodCrashLooping
+                    expr: |
+                      max_over_time(
+                        kube_pod_container_status_waiting_reason{
+                          reason="CrashLoopBackOff"
+                        }[5m]
+                      ) > 0
+                    for: 10m
+                    labels:
+                      severity: critical
+                    annotations:
+                      summary: Pod is crash looping
+
+                  - alert: DeploymentReplicaMismatch
+                    expr: |
+                      kube_deployment_status_replicas_available
+                      <
+                      kube_deployment_spec_replicas
+                    for: 10m
+                    labels:
+                      severity: critical
+
+                  - alert: StatefulSetReplicaMismatch
+                    expr: |
+                      kube_statefulset_status_replicas_ready
+                      <
+                      kube_statefulset_replicas
+                    for: 10m
+                    labels:
+                      severity: critical
+
+                  - alert: DaemonSetUnavailable
+                    expr: |
+                      kube_daemonset_status_number_unavailable > 0
+                    for: 10m
+                    labels:
+                      severity: critical
+
+                  - alert: PodPending
+                    expr: |
+                      kube_pod_status_phase{phase="Pending"} > 0
+                    for: 15m
+                    labels:
+                      severity: warning
+
+                  - alert: ContainerRestartingFrequently
+                    expr: |
+                      increase(
+                        kube_pod_container_status_restarts_total[30m]
+                      ) > 5
+                    for: 10m
+                    labels:
+                      severity: warning
+
+                  - alert: ContainerOOMKilled
+                    expr: |
+                      increase(
+                        kube_pod_container_status_last_terminated_reason{
+                          reason="OOMKilled"
+                        }[15m]
+                      ) > 0
+                    for: 5m
+                    labels:
+                      severity: critical
+
+                  - alert: PVCAlmostFull
+                    expr: |
+                      kubelet_volume_stats_available_bytes
+                      /
+                      kubelet_volume_stats_capacity_bytes
+                      < 0.15
+                    for: 10m
+                    labels:
+                      severity: warning
+
+                  - alert: PVCFull
+                    expr: |
+                      kubelet_volume_stats_available_bytes
+                      /
+                      kubelet_volume_stats_capacity_bytes
+                      < 0.05
+                    for: 5m
+                    labels:
+                      severity: critical
+
+                  - alert: NodeFilesystemUsageHigh
+                    expr: |
+                      (
+                        node_filesystem_avail_bytes{fstype!=""}
+                        /
+                        node_filesystem_size_bytes{fstype!=""}
+                      ) < 0.15
+                    for: 10m
+                    labels:
+                      severity: warning
+
+                  - alert: NodeFilesystemUsageCritical
+                    expr: |
+                      (
+                        node_filesystem_avail_bytes{fstype!=""}
+                        /
+                        node_filesystem_size_bytes{fstype!=""}
+                      ) < 0.05
+                    for: 5m
+                    labels:
+                      severity: critical
+
+                  - alert: CPUThrottlingHigh
+                    expr: |
+                      rate(container_cpu_cfs_throttled_seconds_total[5m]) > 1
+                    for: 10m
+                    labels:
+                      severity: warning
+
+                  - alert: HPAMaxedOut
+                    expr: |
+                      kube_horizontalpodautoscaler_status_current_replicas
+                      ==
+                      kube_horizontalpodautoscaler_spec_max_replicas
+                    for: 15m
+                    labels:
+                      severity: warning
+
+                  - alert: PrometheusTargetDown
+                    expr: |
+                      up == 0
+                    for: 5m
+                    labels:
+                      severity: critical
+
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
