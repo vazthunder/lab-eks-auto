@@ -10,7 +10,7 @@
 - When requirements are ambiguous, ask clarifying questions, do not add unrelated functionality.
 - Before finishing: verify generated commands are syntactically valid, verify generated configurations are internally consistent with unified convention.
 - Do not edit additional parts other what is ordered directly, suggest them as improvements.
-- Do not repeat content uncessarily, only say what changed from previous answer.
+- Do not repeat content unnecessarily, only say what changed from previous answer.
 
 ## Technical considerations
 
